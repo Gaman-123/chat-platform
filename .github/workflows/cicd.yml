@@ -22,6 +22,7 @@ env:
   IMAGE_NAMESPACE: ${{ secrets.DOCKERHUB_NAMESPACE }}
   FRONTEND_IMAGE: full-stack-chatapp-frontend
   BACKEND_IMAGE: full-stack-chatapp-backend
+  NOTIFICATION_IMAGE: full-stack-chatapp-notification
 
 jobs:
   secret_scan_and_lint:
@@ -148,6 +149,16 @@ jobs:
           cache-to: type=gha,mode=max,scope=frontend
           outputs: type=docker,dest=/tmp/frontend-image.tar
 
+      - name: Build notification image (export tar)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./notification-service
+          file: ./notification-service/Dockerfile
+          tags: ${{ env.IMAGE_NAMESPACE }}/${{ env.NOTIFICATION_IMAGE }}:${{ needs.docker_meta.outputs.short_sha }}
+          cache-from: type=gha,scope=notification
+          cache-to: type=gha,mode=max,scope=notification
+          outputs: type=docker,dest=/tmp/notification-image.tar
+
       - name: Upload built images
         uses: actions/upload-artifact@v4
         with:
@@ -155,6 +166,7 @@ jobs:
           path: |
             /tmp/backend-image.tar
             /tmp/frontend-image.tar
+            /tmp/notification-image.tar
           if-no-files-found: error
           retention-days: 1
 
@@ -186,6 +198,9 @@ jobs:
       - name: Load frontend image
         run: docker load -i /tmp/images/frontend-image.tar
 
+      - name: Load notification image
+        run: docker load -i /tmp/images/notification-image.tar
+
       - name: Container scan (Trivy) - backend
         uses: aquasecurity/trivy-action@0.35.0
         with:
@@ -202,6 +217,14 @@ jobs:
           output: trivy-frontend.sarif
           severity: CRITICAL,HIGH
 
+      - name: Container scan (Trivy) - notification
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ env.IMAGE_NAMESPACE }}/${{ env.NOTIFICATION_IMAGE }}:${{ needs.docker_meta.outputs.short_sha }}
+          format: sarif
+          output: trivy-notification.sarif
+          severity: CRITICAL,HIGH
+
       - name: Upload Trivy results (backend) to Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -213,6 +236,12 @@ jobs:
         with:
           sarif_file: trivy-frontend.sarif
           category: trivy-frontend
+
+      - name: Upload Trivy results (notification) to Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-notification.sarif
+          category: trivy-notification
 
   docker_push:
     name: Docker Push
@@ -234,6 +263,9 @@ jobs:
       - name: Load frontend image
         run: docker load -i /tmp/images/frontend-image.tar
 
+      - name: Load notification image
+        run: docker load -i /tmp/images/notification-image.tar
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -246,6 +278,8 @@ jobs:
             "${{ env.IMAGE_NAMESPACE }}/${{ env.BACKEND_IMAGE }}:latest"
           docker tag "${{ env.IMAGE_NAMESPACE }}/${{ env.FRONTEND_IMAGE }}:${{ needs.docker_meta.outputs.short_sha }}" \
             "${{ env.IMAGE_NAMESPACE }}/${{ env.FRONTEND_IMAGE }}:latest"
+          docker tag "${{ env.IMAGE_NAMESPACE }}/${{ env.NOTIFICATION_IMAGE }}:${{ needs.docker_meta.outputs.short_sha }}" \
+            "${{ env.IMAGE_NAMESPACE }}/${{ env.NOTIFICATION_IMAGE }}:latest"
 
       - name: Push backend image
         run: |
@@ -256,6 +290,11 @@ jobs:
         run: |
           docker push "${{ env.IMAGE_NAMESPACE }}/${{ env.FRONTEND_IMAGE }}:${{ needs.docker_meta.outputs.short_sha }}"
           docker push "${{ env.IMAGE_NAMESPACE }}/${{ env.FRONTEND_IMAGE }}:latest"
+
+      - name: Push notification image
+        run: |
+          docker push "${{ env.IMAGE_NAMESPACE }}/${{ env.NOTIFICATION_IMAGE }}:${{ needs.docker_meta.outputs.short_sha }}"
+          docker push "${{ env.IMAGE_NAMESPACE }}/${{ env.NOTIFICATION_IMAGE }}:latest"
 
   update_helm_image_tags:
     name: Update Helm image tags
@@ -277,6 +316,7 @@ jobs:
           IMAGE_NAMESPACE: ${{ env.IMAGE_NAMESPACE }}
           FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}
           BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
+          NOTIFICATION_IMAGE: ${{ env.NOTIFICATION_IMAGE }}
         run: |
           python3 - <<'PY'
           import os
@@ -324,6 +364,7 @@ jobs:
           lines = values_path.read_text().splitlines()
           update_section(lines, "frontend", os.environ["FRONTEND_IMAGE"])
           update_section(lines, "backend", os.environ["BACKEND_IMAGE"])
+          update_section(lines, "notification", os.environ["NOTIFICATION_IMAGE"])
           values_path.write_text("\n".join(lines) + "\n")
           PY
 

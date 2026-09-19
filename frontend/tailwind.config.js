@@ -11,7 +11,7 @@ export default {
     themes: [
       {
         light: {
-          "primary": "#84B1DD", // The professional light blue from the reference
+          "primary": "#7BAEE0", // The exact blue from the uploaded image
           "secondary": "#ffffff",
           "accent": "#6399c5",
           "neutral": "#1f2937",

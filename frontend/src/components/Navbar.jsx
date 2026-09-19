@@ -7,16 +7,16 @@ const Navbar = () => {
 
   return (
     <header
-      className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 shadow-sm"
+      className="bg-primary text-primary-content border-b border-primary-focus fixed w-full top-0 z-40 shadow-md"
     >
       <div className="container mx-auto px-4 h-16">
         <div className="flex items-center justify-between h-full">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-all">
-              <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-primary" />
+              <div className="size-9 rounded-lg bg-white/20 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-lg font-bold">Chatty</h1>
+              <h1 className="text-xl font-bold tracking-tight">Chatty</h1>
             </Link>
           </div>
 
@@ -24,7 +24,7 @@ const Navbar = () => {
             <Link
               to={"/settings"}
               className={`
-              btn btn-sm gap-2 transition-colors
+              btn btn-sm btn-ghost gap-2 transition-colors text-primary-content hover:bg-white/20
               
               `}
             >
@@ -34,12 +34,12 @@ const Navbar = () => {
 
             {authUser && (
               <>
-                <Link to={"/profile"} className={`btn btn-sm gap-2`}>
+                <Link to={"/profile"} className={`btn btn-sm btn-ghost gap-2 text-primary-content hover:bg-white/20`}>
                   <User className="size-5" />
                   <span className="hidden sm:inline">Profile</span>
                 </Link>
 
-                <button className="flex gap-2 items-center" onClick={logout}>
+                <button className="btn btn-sm btn-ghost flex gap-2 items-center text-primary-content hover:bg-white/20" onClick={logout}>
                   <LogOut className="size-5" />
                   <span className="hidden sm:inline">Logout</span>
                 </button>

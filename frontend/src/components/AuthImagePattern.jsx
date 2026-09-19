@@ -1,19 +1,20 @@
 const AuthImagePattern = ({ title, subtitle }) => {
   return (
-    <div className="hidden lg:flex items-center justify-center bg-base-200 p-12">
-      <div className="max-w-md text-center">
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[...Array(9)].map((_, i) => (
-            <div
-              key={i}
-              className={`aspect-square rounded-2xl bg-primary/10 ${
-                i % 2 === 0 ? "animate-pulse" : ""
-              }`}
-            />
-          ))}
+    <div className="hidden lg:flex flex-col items-center justify-center bg-base-200 p-12 relative overflow-hidden">
+      {/* Professional geometric background */}
+      <div className="absolute inset-0 w-full h-full">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/20 rounded-full blur-3xl mix-blend-multiply"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-72 h-72 bg-accent/20 rounded-full blur-3xl mix-blend-multiply"></div>
+      </div>
+      
+      <div className="max-w-md text-center relative z-10">
+        <div className="mb-8 flex justify-center">
+          <div className="w-24 h-24 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-sm">
+            <div className="w-12 h-12 bg-primary rounded-xl opacity-80 shadow-md"></div>
+          </div>
         </div>
-        <h2 className="text-2xl font-bold mb-4">{title}</h2>
-        <p className="text-base-content/60">{subtitle}</p>
+        <h2 className="text-3xl font-bold mb-4 tracking-tight">{title}</h2>
+        <p className="text-base-content/70 text-lg leading-relaxed">{subtitle}</p>
       </div>
     </div>
   );

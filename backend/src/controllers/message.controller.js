@@ -6,15 +6,33 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 import redis from "../lib/redis.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Gemini client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+// Gemini API helper - AQ. keys work as query params, no Bearer needed
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`;
+
+async function callGemini(prompt) {
+  const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Gemini API error: ${response.status} - ${err}`);
+  }
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini.";
+}
 
 export const getUsersForSidebar = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
     const cacheKey = `sidebar_users:${loggedInUserId}`;
-    
+
     // Check cache first
     const cachedUsers = await redis.get(cacheKey);
     if (cachedUsers) {
@@ -37,7 +55,7 @@ export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
-    
+
     // Sort IDs to create a consistent cache key for the conversation
     const conversationId = [myId.toString(), userToChatId.toString()].sort().join("_");
     const cacheKey = `messages:${conversationId}`;
@@ -84,8 +102,7 @@ export const sendMessage = async (req, res) => {
       try {
         // Extract the prompt by removing @gemini from the text
         const prompt = text.replace(/@gemini/gi, "").trim();
-        const result = await geminiModel.generateContent(prompt);
-        geminiResponse = result.response.text();
+        geminiResponse = await callGemini(prompt);
         console.log("Gemini responded to:", prompt);
       } catch (aiError) {
         console.error("Gemini API error:", aiError.message);

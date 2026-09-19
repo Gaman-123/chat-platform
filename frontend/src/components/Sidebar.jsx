@@ -61,8 +61,8 @@ const Sidebar = () => {
               />
               {onlineUsers.includes(user._id) && (
                 <span
-                  className="absolute bottom-0 right-0 size-3 bg-green-500 
-                  rounded-full ring-2 ring-zinc-900"
+                  className="absolute bottom-0 right-0 size-3 bg-success 
+                  rounded-full ring-2 ring-base-100"
                 />
               )}
             </div>
@@ -70,7 +70,7 @@ const Sidebar = () => {
             {/* User info - only visible on larger screens */}
             <div className="hidden lg:block text-left min-w-0">
               <div className="font-medium truncate">{user.fullName}</div>
-              <div className="text-sm text-zinc-400">
+              <div className="text-sm text-base-content/60">
                 {onlineUsers.includes(user._id) ? "Online" : "Offline"}
               </div>
             </div>

@@ -3,11 +3,23 @@ import Message from "../models/message.model.js";
 
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
+import redis from "../lib/redis.js";
 
 export const getUsersForSidebar = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
+    const cacheKey = `sidebar_users:${loggedInUserId}`;
+    
+    // Check cache first
+    const cachedUsers = await redis.get(cacheKey);
+    if (cachedUsers) {
+      return res.status(200).json(JSON.parse(cachedUsers));
+    }
+
     const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
+
+    // Store in cache for 5 minutes
+    await redis.set(cacheKey, JSON.stringify(filteredUsers), "EX", 300);
 
     res.status(200).json(filteredUsers);
   } catch (error) {
@@ -20,6 +32,16 @@ export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const myId = req.user._id;
+    
+    // Sort IDs to create a consistent cache key for the conversation
+    const conversationId = [myId.toString(), userToChatId.toString()].sort().join("_");
+    const cacheKey = `messages:${conversationId}`;
+
+    // Check cache first
+    const cachedMessages = await redis.get(cacheKey);
+    if (cachedMessages) {
+      return res.status(200).json(JSON.parse(cachedMessages));
+    }
 
     const messages = await Message.find({
       $or: [
@@ -27,6 +49,9 @@ export const getMessages = async (req, res) => {
         { senderId: userToChatId, receiverId: myId },
       ],
     });
+
+    // Cache messages for 1 hour
+    await redis.set(cacheKey, JSON.stringify(messages), "EX", 3600);
 
     res.status(200).json(messages);
   } catch (error) {
@@ -56,6 +81,10 @@ export const sendMessage = async (req, res) => {
     });
 
     await newMessage.save();
+
+    // Invalidate message cache for this conversation
+    const conversationId = [senderId.toString(), receiverId.toString()].sort().join("_");
+    await redis.del(`messages:${conversationId}`);
 
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {

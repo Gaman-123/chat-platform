@@ -7,7 +7,8 @@ import redis from "../lib/redis.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Gemini API helper - AQ. keys work as query params, no Bearer needed
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+// .trim() is critical to remove Windows CRLF line endings from .env file
+const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`;
 
 async function callGemini(prompt) {

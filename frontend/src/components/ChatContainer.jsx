@@ -57,38 +57,63 @@ const ChatContainer = () => {
         }}
       >
         {messages.map((message) => (
-          <div
-            key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
-            ref={messageEndRef}
-          >
-            <div className=" chat-image avatar">
-              <div className="size-10 rounded-full border">
-                <img
-                  src={
-                    message.senderId === authUser._id
-                      ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
-                  }
-                  alt="profile pic"
-                />
+          <div key={message._id}>
+            <div
+              className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+              ref={messageEndRef}
+            >
+              <div className=" chat-image avatar">
+                <div className="size-10 rounded-full border">
+                  <img
+                    src={
+                      message.senderId === authUser._id
+                        ? authUser.profilePic || "/avatar.png"
+                        : selectedUser.profilePic || "/avatar.png"
+                    }
+                    alt="profile pic"
+                  />
+                </div>
+              </div>
+              <div className="chat-header mb-1">
+                <time className="text-xs opacity-50 ml-1">
+                  {formatMessageTime(message.createdAt)}
+                </time>
+              </div>
+              <div className={`chat-bubble flex flex-col ${message.senderId === authUser._id ? "bg-primary text-primary-content" : "bg-base-100 text-base-content border border-base-300"}`}>
+                {message.image && (
+                  <img
+                    src={message.image}
+                    alt="Attachment"
+                    className="sm:max-w-[200px] rounded-md mb-2"
+                  />
+                )}
+                {message.text && <p>{message.text}</p>}
               </div>
             </div>
-            <div className="chat-header mb-1">
-              <time className="text-xs opacity-50 ml-1">
-                {formatMessageTime(message.createdAt)}
-              </time>
-            </div>
-            <div className={`chat-bubble flex flex-col ${message.senderId === authUser._id ? "bg-primary text-primary-content" : "bg-base-100 text-base-content border border-base-300"}`}>
-              {message.image && (
-                <img
-                  src={message.image}
-                  alt="Attachment"
-                  className="sm:max-w-[200px] rounded-md mb-2"
-                />
-              )}
-              {message.text && <p>{message.text}</p>}
-            </div>
+
+            {/* Gemini AI Response Bubble */}
+            {message.geminiResponse && (
+              <div className="chat chat-start">
+                <div className="chat-image avatar">
+                  <div className="size-10 rounded-full flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335)" }}>
+                    <span className="text-white font-bold text-sm">G</span>
+                  </div>
+                </div>
+                <div className="chat-header mb-1">
+                  <span className="text-xs font-semibold" style={{ color: "#4285F4" }}>✨ Gemini AI</span>
+                </div>
+                <div className="chat-bubble text-base-content border"
+                  style={{ 
+                    background: "linear-gradient(135deg, #EBF5FB, #E8F8F5)", 
+                    borderColor: "#7BAEE0",
+                    maxWidth: "80%",
+                    whiteSpace: "pre-wrap"
+                  }}>
+                  <p>{message.geminiResponse}</p>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

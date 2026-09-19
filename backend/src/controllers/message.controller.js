@@ -4,6 +4,11 @@ import Message from "../models/message.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import redis from "../lib/redis.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Initialize Gemini client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -73,11 +78,27 @@ export const sendMessage = async (req, res) => {
       imageUrl = uploadResponse.secure_url;
     }
 
+    // Check if message contains @gemini mention
+    let geminiResponse = null;
+    if (text && text.toLowerCase().includes("@gemini")) {
+      try {
+        // Extract the prompt by removing @gemini from the text
+        const prompt = text.replace(/@gemini/gi, "").trim();
+        const result = await geminiModel.generateContent(prompt);
+        geminiResponse = result.response.text();
+        console.log("Gemini responded to:", prompt);
+      } catch (aiError) {
+        console.error("Gemini API error:", aiError.message);
+        geminiResponse = "Sorry, I could not process your request right now. Please try again.";
+      }
+    }
+
     const newMessage = new Message({
       senderId,
       receiverId,
       text,
       image: imageUrl,
+      geminiResponse,
     });
 
     await newMessage.save();

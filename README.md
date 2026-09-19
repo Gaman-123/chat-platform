@@ -89,6 +89,7 @@ This project provides a scalable, production-style chat application with:
 | Layer | Technologies |
 |-------|--------------|
 | **Backend** | Node.js, Express, Socket.io, MongoDB, prom-client |
+| **Notification Service** | Python, FastAPI, PostgreSQL, Alembic |
 | **Frontend** | React, TailwindCSS, Zustand, Vite |
 | **Containerization** | Docker, Docker Compose |
 | **Orchestration** | Kubernetes (Kind), ingress-nginx |
@@ -157,9 +158,12 @@ graph LR
         SVC --> BE[Backend Pods<br/>Node.js + Socket.io]:::app
         BE -->|Data Persistence| DB[(MongoDB<br/>StatefulSet)]:::storage
         
+        SVC -->|Notify Events| NS[Notification Service<br/>Python FastAPI]:::app
+        NS -->|Data Persistence| PDB[(PostgreSQL<br/>StatefulSet)]:::storage
+
         %% Hardening Elements
         HPA[Horizontal Pod Autoscaler<br/>Target: 70% CPU]:::app -.->|Scales| BE
-        PDB[Pod Disruption Budget]:::app -.->|Protects| BE
+        PDB_Obj[Pod Disruption Budget]:::app -.->|Protects| BE
         NetPol[Network Policies]:::storage -.->|Isolates| DB
     end
 
@@ -320,6 +324,10 @@ cloud-native-chat-platform/
 │       ├── lib/metrics.js     # prom-client metric definitions
 │       ├── middleware/        # HTTP metrics middleware
 │       └── routes/metrics.route.js
+├── notification-service/      # Python FastAPI Notification Service
+│   ├── app/                   # API logic and endpoints
+│   ├── alembic/               # Database migrations
+│   └── Dockerfile
 ├── helm/chat-app/             # Helm chart (all app workloads)
 │   ├── values.yaml            # image tags, ingress, HPA, PDB, secrets, resources
 │   └── templates/             # Deployments, HPA, PDB, NetworkPolicy, ServiceMonitor, etc.

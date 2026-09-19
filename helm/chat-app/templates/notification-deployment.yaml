@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chat-app.fullname" . }}-notification
+  labels:
+    {{- include "chat-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification
+spec:
+  replicas: {{ .Values.notification.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chat-app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: notification
+  template:
+    metadata:
+      labels:
+        {{- include "chat-app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: notification
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-notification
+          image: "{{ .Values.notification.image.repository }}:{{ .Values.notification.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.notification.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              value: "postgresql+asyncpg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@{{ include "chat-app.fullname" . }}-postgres:5432/$(POSTGRES_DB)"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.existingSecret | default (printf "%s-postgres" (include "chat-app.fullname" .)) }}
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.existingSecret | default (printf "%s-postgres" (include "chat-app.fullname" .)) }}
+                  key: postgres-password
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.database }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.notification.resources | nindent 12 }}

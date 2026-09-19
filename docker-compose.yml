@@ -81,13 +81,3 @@ networks:
 volumes:
   mongodb_data:
   postgres_data:
-
-
-
-
-
-
-
-
-
-

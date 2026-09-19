@@ -18,26 +18,32 @@ const SettingsPage = () => {
           <p className="text-sm text-base-content/70">Choose a theme for your chat interface</p>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+        <div className="grid grid-cols-2 gap-4 max-w-md">
           {THEMES.map((t) => (
             <button
               key={t}
               className={`
-                group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors
-                ${theme === t ? "bg-base-200" : "hover:bg-base-200/50"}
+                group flex flex-col items-center gap-3 p-4 rounded-xl transition-all border-2
+                ${theme === t ? "border-primary bg-base-200" : "border-transparent hover:bg-base-200/50"}
               `}
               onClick={() => setTheme(t)}
             >
-              <div className="relative h-8 w-full rounded-md overflow-hidden" data-theme={t}>
-                <div className="absolute inset-0 grid grid-cols-4 gap-px p-1">
-                  <div className="rounded bg-primary"></div>
-                  <div className="rounded bg-secondary"></div>
-                  <div className="rounded bg-accent"></div>
-                  <div className="rounded bg-neutral"></div>
+              <div className="relative h-20 w-full rounded-lg overflow-hidden shadow-sm border border-base-300" data-theme={t}>
+                <div className="absolute inset-0 flex flex-col p-2 bg-base-100">
+                  <div className="h-4 w-full bg-base-300 rounded mb-2 flex items-center px-1">
+                    <div className="size-2 rounded-full bg-primary"></div>
+                  </div>
+                  <div className="flex-1 flex gap-2">
+                    <div className="w-1/3 bg-base-200 rounded"></div>
+                    <div className="flex-1 flex flex-col gap-1">
+                      <div className="h-2 w-3/4 bg-base-content/20 rounded"></div>
+                      <div className="h-2 w-1/2 bg-base-content/20 rounded"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <span className="text-[11px] font-medium truncate w-full text-center">
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+              <span className="text-sm font-semibold">
+                {t.charAt(0).toUpperCase() + t.slice(1)} Mode
               </span>
             </button>
           ))}

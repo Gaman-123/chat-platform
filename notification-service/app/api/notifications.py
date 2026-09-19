@@ -29,3 +29,14 @@ async def create_notification_event(notification: NotificationCreate):
 @router.get("/{user_id}", response_model=List[NotificationResponse])
 async def get_user_notifications(user_id: str):
     return [notif for notif in fake_db.values() if notif.user_id == user_id]
+
+@router.patch("/{notification_id}/read", response_model=NotificationResponse)
+async def mark_as_read(notification_id: str):
+    from app.core.exceptions import NotificationNotFoundError
+    
+    if notification_id not in fake_db:
+        raise NotificationNotFoundError(notification_id=notification_id)
+        
+    notification = fake_db[notification_id]
+    notification.is_read = True
+    return notification

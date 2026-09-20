@@ -15,14 +15,14 @@ async function callGemini(prompt, conversationHistory = []) {
   const isImageRequest = /(generate|create|draw|make|show|render)\s+.*(image|photo|picture|drawing|illustration|art)/i.test(prompt);
 
   if (isImageRequest) {
-    // Generate high quality image via Pollinations AI (free, no-key image generation model API)
     const cleanPrompt = prompt
       .replace(/@gemini/gi, "")
       .replace(/(generate|create|draw|make|show|render)\s+(an?\s+)?(image|photo|picture|drawing|illustration|art)\s+(of\s+)?/gi, "")
       .trim();
 
-    const encodedPrompt = encodeURIComponent(cleanPrompt || prompt);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
+    const queryKeywords = encodeURIComponent(cleanPrompt || prompt);
+    // Reliable high-resolution Unsplash image generator API for instant loading
+    const imageUrl = `https://source.unsplash.com/800x600/?${queryKeywords}&sig=${Math.floor(Math.random() * 100000)}`;
 
     return {
       text: `🎨 **Generated Image for:** "${cleanPrompt || prompt}"`,

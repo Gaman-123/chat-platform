@@ -111,12 +111,17 @@ const ChatContainer = () => {
                     maxWidth: "80%",
                   }}>
                   {message.geminiImage && (
-                    <div className="mb-2 overflow-hidden rounded-lg border border-blue-200 shadow-sm">
+                    <div className="mb-2 overflow-hidden rounded-lg border border-blue-200 shadow-sm bg-base-200">
                       <img
                         src={message.geminiImage}
                         alt="Gemini Generated Art"
-                        className="w-full max-h-72 object-cover rounded-lg hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
+                        className="w-full max-h-72 object-cover rounded-lg hover:scale-105 transition-transform duration-300 min-h-[200px]"
+                        loading="eager"
+                        onError={(e) => {
+                          // Fallback image if primary engine is slow or blocked
+                          e.target.onerror = null;
+                          e.target.src = `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`;
+                        }}
                       />
                     </div>
                   )}

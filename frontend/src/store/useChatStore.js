@@ -1,3 +1,4 @@
+import React from "react";
 import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
@@ -73,26 +74,46 @@ export const useChatStore = create((set, get) => ({
         // Toast Popup Notification for incoming message
         const sender = get().users.find((u) => u._id === newMessage.senderId);
         const senderName = sender ? sender.fullName : "Someone";
-        toast.custom((t) => (
-          <div
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } max-w-md w-full bg-base-100 shadow-lg rounded-xl pointer-events-auto flex ring-1 ring-primary/20 p-3 items-center gap-3 cursor-pointer border border-primary/30`}
-            onClick={() => {
-              if (sender) get().setSelectedUser(sender);
-              toast.dismiss(t.id);
-            }}
-          >
-            <div className="size-10 rounded-full overflow-hidden flex-shrink-0 border border-primary">
-              <img src={sender?.profilePic || "/avatar.png"} alt={senderName} className="size-full object-cover" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-primary">{senderName}</p>
-              <p className="text-sm truncate text-base-content font-medium">{newMessage.text || "Sent an attachment"}</p>
-            </div>
-            <span className="badge badge-primary badge-sm text-[10px] animate-pulse">NEW</span>
-          </div>
-        ), { duration: 4000 });
+        toast.custom(
+          (t) =>
+            React.createElement(
+              "div",
+              {
+                className: `${
+                  t.visible ? "animate-enter" : "animate-leave"
+                } max-w-md w-full bg-base-100 shadow-lg rounded-xl pointer-events-auto flex ring-1 ring-primary/20 p-3 items-center gap-3 cursor-pointer border border-primary/30`,
+                onClick: () => {
+                  if (sender) get().setSelectedUser(sender);
+                  toast.dismiss(t.id);
+                },
+              },
+              React.createElement(
+                "div",
+                { className: "size-10 rounded-full overflow-hidden flex-shrink-0 border border-primary" },
+                React.createElement("img", {
+                  src: sender?.profilePic || "/avatar.png",
+                  alt: senderName,
+                  className: "size-full object-cover",
+                })
+              ),
+              React.createElement(
+                "div",
+                { className: "flex-1 min-w-0" },
+                React.createElement("p", { className: "text-xs font-bold text-primary" }, senderName),
+                React.createElement(
+                  "p",
+                  { className: "text-sm truncate text-base-content font-medium" },
+                  newMessage.text || "Sent an attachment"
+                )
+              ),
+              React.createElement(
+                "span",
+                { className: "badge badge-primary badge-sm text-[10px] animate-pulse" },
+                "NEW"
+              )
+            ),
+          { duration: 4000 }
+        );
       }
     });
 

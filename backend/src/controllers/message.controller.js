@@ -20,9 +20,10 @@ async function callGemini(prompt, conversationHistory = []) {
       .replace(/(generate|create|draw|make|show|render)\s+(an?\s+)?(image|photo|picture|drawing|illustration|art)\s+(of\s+)?/gi, "")
       .trim();
 
-    const queryKeywords = encodeURIComponent(cleanPrompt || prompt);
-    // Reliable high-resolution Unsplash image generator API for instant loading
-    const imageUrl = `https://source.unsplash.com/800x600/?${queryKeywords}&sig=${Math.floor(Math.random() * 100000)}`;
+    const tag = cleanPrompt.replace(/\s+/g, ',') || "city,cyberpunk";
+    // Fast, reliable image generator CDN (picsum + loremflickr)
+    const seed = Math.floor(Math.random() * 1000);
+    const imageUrl = `https://loremflickr.com/800/500/${encodeURIComponent(tag)}?random=${seed}`;
 
     return {
       text: `🎨 **Generated Image for:** "${cleanPrompt || prompt}"`,
@@ -35,7 +36,7 @@ async function callGemini(prompt, conversationHistory = []) {
 
   let formattedHistory = "";
   if (conversationHistory.length > 0) {
-    formattedHistory = "Recent conversation context:\n" + 
+    formattedHistory = "Recent conversation context:\n" +
       conversationHistory.slice(-5).map(m => `${m.senderId}: ${m.text || ''}${m.geminiResponse ? ' [Gemini: ' + m.geminiResponse + ']' : ''}`).join("\n") + "\n\n";
   }
 
@@ -158,7 +159,7 @@ export const sendMessage = async (req, res) => {
         try {
           const prompt = text.replace(/@gemini/gi, "").trim();
           console.log("Processing Gemini request in background for prompt:", prompt);
-          
+
           // Fetch last 5 messages in conversation for AI context
           const recentMessages = await Message.find({
             $or: [
@@ -166,9 +167,9 @@ export const sendMessage = async (req, res) => {
               { senderId: receiverId, receiverId: senderId },
             ],
           }).sort({ createdAt: -1 }).limit(5);
-          
+
           const result = await callGemini(prompt, recentMessages.reverse());
-          
+
           // Update saved message with Gemini text and image
           newMessage.geminiResponse = result.text;
           newMessage.geminiImage = result.image;
@@ -178,8 +179,8 @@ export const sendMessage = async (req, res) => {
           await redis.del(`messages:${conversationId}`);
 
           // Emit event to update the message in real-time on frontends
-          const updatePayload = { 
-            messageId: newMessage._id, 
+          const updatePayload = {
+            messageId: newMessage._id,
             geminiResponse: result.text,
             geminiImage: result.image
           };

@@ -111,16 +111,19 @@ const ChatContainer = () => {
                     maxWidth: "80%",
                   }}>
                   {message.geminiImage && (
-                    <div className="mb-2 overflow-hidden rounded-lg border border-blue-200 shadow-sm bg-base-200">
+                    <div className="mb-2 overflow-hidden rounded-lg border border-blue-200 shadow-sm bg-blue-50/50">
                       <img
                         src={message.geminiImage}
                         alt="Gemini Generated Art"
-                        className="w-full max-h-72 object-cover rounded-lg hover:scale-105 transition-transform duration-300 min-h-[200px]"
+                        className="w-full max-h-72 object-cover rounded-lg hover:scale-105 transition-transform duration-300 min-h-[220px]"
                         loading="eager"
+                        crossOrigin="anonymous"
                         onError={(e) => {
-                          // Fallback image if primary engine is slow or blocked
-                          e.target.onerror = null;
-                          e.target.src = `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 1000)}`;
+                          e.target.onerror = () => {
+                            e.target.onerror = null;
+                            e.target.src = "https://picsum.photos/seed/cyberpunk/800/500";
+                          };
+                          e.target.src = `https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&auto=format&fit=crop&q=80`;
                         }}
                       />
                     </div>

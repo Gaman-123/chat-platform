@@ -1,42 +1,50 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 from typing import List
-import uuid
-from datetime import datetime, timezone
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.models.notification import NotificationCreate, NotificationResponse
+from app.models.db_notification import NotificationDB
+from app.core.database import get_db
+from app.core.exceptions import NotificationNotFoundError
 
 router = APIRouter()
 
-# Temporary in-memory storage until PostgreSQL is integrated
-fake_db = {}
-
 @router.post("/event", response_model=NotificationResponse, status_code=status.HTTP_201_CREATED)
-async def create_notification_event(notification: NotificationCreate):
-    notification_id = str(uuid.uuid4())
-    
-    new_notification = NotificationResponse(
-        id=notification_id,
+async def create_notification_event(
+    notification: NotificationCreate, 
+    db: AsyncSession = Depends(get_db)
+):
+    db_notif = NotificationDB(
         user_id=notification.user_id,
         type=notification.type,
         content=notification.content,
-        is_read=False,
-        created_at=datetime.now(timezone.utc)
     )
-    
-    fake_db[notification_id] = new_notification
-    return new_notification
+    db.add(db_notif)
+    await db.commit()
+    await db.refresh(db_notif)
+    return db_notif
 
 @router.get("/{user_id}", response_model=List[NotificationResponse])
-async def get_user_notifications(user_id: str):
-    return [notif for notif in fake_db.values() if notif.user_id == user_id]
+async def get_user_notifications(
+    user_id: str, 
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(NotificationDB).where(NotificationDB.user_id == user_id))
+    return result.scalars().all()
 
 @router.patch("/{notification_id}/read", response_model=NotificationResponse)
-async def mark_as_read(notification_id: str):
-    from app.core.exceptions import NotificationNotFoundError
+async def mark_as_read(
+    notification_id: str, 
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(NotificationDB).where(NotificationDB.id == notification_id))
+    notif = result.scalars().first()
     
-    if notification_id not in fake_db:
+    if not notif:
         raise NotificationNotFoundError(notification_id=notification_id)
         
-    notification = fake_db[notification_id]
-    notification.is_read = True
-    return notification
+    notif.is_read = True
+    await db.commit()
+    await db.refresh(notif)
+    return notif

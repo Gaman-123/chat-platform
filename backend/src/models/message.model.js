@@ -22,6 +22,14 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    geminiResponse: {
+      type: String,
+      default: null,
+    },
+    geminiImage: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

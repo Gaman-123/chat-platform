@@ -12,11 +12,14 @@ const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`;
 
 async function callGemini(prompt) {
+  // Prepended system prompt directive to ensure concise, chat-friendly output
+  const systemDirective = "You are Gemini AI assistant in a chat app. Keep your answer concise, concise, clear, and compact (under 2-4 sentences or short bullet points if possible). Avoid long intros or unnecessary filler so it fits nicely in a small chat bubble.\n\nUser request: ";
+  
   const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }]
+      contents: [{ parts: [{ text: systemDirective + prompt }] }]
     })
   });
 
@@ -97,26 +100,12 @@ export const sendMessage = async (req, res) => {
       imageUrl = uploadResponse.secure_url;
     }
 
-    // Check if message contains @gemini mention
-    let geminiResponse = null;
-    if (text && text.toLowerCase().includes("@gemini")) {
-      try {
-        // Extract the prompt by removing @gemini from the text
-        const prompt = text.replace(/@gemini/gi, "").trim();
-        geminiResponse = await callGemini(prompt);
-        console.log("Gemini responded to:", prompt);
-      } catch (aiError) {
-        console.error("Gemini API error:", aiError.message);
-        geminiResponse = "Sorry, I could not process your request right now. Please try again.";
-      }
-    }
-
     const newMessage = new Message({
       senderId,
       receiverId,
       text,
       image: imageUrl,
-      geminiResponse,
+      geminiResponse: null,
     });
 
     await newMessage.save();
@@ -126,11 +115,45 @@ export const sendMessage = async (req, res) => {
     await redis.del(`messages:${conversationId}`);
 
     const receiverSocketId = getReceiverSocketId(receiverId);
+    const senderSocketId = getReceiverSocketId(senderId);
+
+    // Broadcast user's message immediately to both receiver & sender
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
+    // Return response immediately so UI feels instant
     res.status(201).json(newMessage);
+
+    // If @gemini is mentioned, process AI response asynchronously in background
+    if (text && text.toLowerCase().includes("@gemini")) {
+      (async () => {
+        try {
+          const prompt = text.replace(/@gemini/gi, "").trim();
+          console.log("Processing Gemini request in background for prompt:", prompt);
+          const geminiText = await callGemini(prompt);
+          
+          // Update saved message with Gemini response
+          newMessage.geminiResponse = geminiText;
+          await newMessage.save();
+
+          // Invalidate cache again so fetch gets latest data
+          await redis.del(`messages:${conversationId}`);
+
+          // Emit event to update the message in real-time on frontends
+          const updatePayload = { messageId: newMessage._id, geminiResponse: geminiText };
+          if (receiverSocketId) io.to(receiverSocketId).emit("updateMessageGemini", updatePayload);
+          if (senderSocketId) io.to(senderSocketId).emit("updateMessageGemini", updatePayload);
+        } catch (aiError) {
+          console.error("Async Gemini processing error:", aiError.message);
+          newMessage.geminiResponse = "Sorry, I could not process your request right now. Please try again.";
+          await newMessage.save();
+          const updatePayload = { messageId: newMessage._id, geminiResponse: newMessage.geminiResponse };
+          if (receiverSocketId) io.to(receiverSocketId).emit("updateMessageGemini", updatePayload);
+          if (senderSocketId) io.to(senderSocketId).emit("updateMessageGemini", updatePayload);
+        }
+      })();
+    }
   } catch (error) {
     console.log("Error in sendMessage controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });

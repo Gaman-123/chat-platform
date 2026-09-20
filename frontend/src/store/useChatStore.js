@@ -57,11 +57,20 @@ export const useChatStore = create((set, get) => ({
         messages: [...get().messages, newMessage],
       });
     });
+
+    socket.on("updateMessageGemini", ({ messageId, geminiResponse }) => {
+      set({
+        messages: get().messages.map((msg) =>
+          msg._id === messageId ? { ...msg, geminiResponse } : msg
+        ),
+      });
+    });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
+    socket.off("updateMessageGemini");
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),

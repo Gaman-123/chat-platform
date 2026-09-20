@@ -117,10 +117,10 @@ export const useChatStore = create((set, get) => ({
       }
     });
 
-    socket.on("updateMessageGemini", ({ messageId, geminiResponse }) => {
+    socket.on("updateMessageGemini", ({ messageId, geminiResponse, geminiImage }) => {
       set({
         messages: get().messages.map((msg) =>
-          msg._id === messageId ? { ...msg, geminiResponse } : msg
+          msg._id === messageId ? { ...msg, geminiResponse, geminiImage } : msg
         ),
       });
     });

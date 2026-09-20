@@ -11,15 +11,41 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`;
 
-async function callGemini(prompt) {
-  // Prepended system prompt directive to ensure concise, chat-friendly output
-  const systemDirective = "You are Gemini AI assistant in a chat app. Keep your answer concise, concise, clear, and compact (under 2-4 sentences or short bullet points if possible). Avoid long intros or unnecessary filler so it fits nicely in a small chat bubble.\n\nUser request: ";
-  
+async function callGemini(prompt, conversationHistory = []) {
+  const isImageRequest = /(generate|create|draw|make|show|render)\s+.*(image|photo|picture|drawing|illustration|art)/i.test(prompt);
+
+  if (isImageRequest) {
+    // Generate high quality image via Pollinations AI (free, no-key image generation model API)
+    const cleanPrompt = prompt
+      .replace(/@gemini/gi, "")
+      .replace(/(generate|create|draw|make|show|render)\s+(an?\s+)?(image|photo|picture|drawing|illustration|art)\s+(of\s+)?/gi, "")
+      .trim();
+
+    const encodedPrompt = encodeURIComponent(cleanPrompt || prompt);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
+
+    return {
+      text: `🎨 **Generated Image for:** "${cleanPrompt || prompt}"`,
+      image: imageUrl,
+    };
+  }
+
+  // Prepended system directive and recent conversation context
+  const systemDirective = "You are Gemini AI assistant in a chat app. Keep your answer concise, clear, and compact (2-4 sentences or short bullets). Avoid long intros.\n\n";
+
+  let formattedHistory = "";
+  if (conversationHistory.length > 0) {
+    formattedHistory = "Recent conversation context:\n" + 
+      conversationHistory.slice(-5).map(m => `${m.senderId}: ${m.text || ''}${m.geminiResponse ? ' [Gemini: ' + m.geminiResponse + ']' : ''}`).join("\n") + "\n\n";
+  }
+
+  const fullPrompt = systemDirective + formattedHistory + "User request: " + prompt;
+
   const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: systemDirective + prompt }] }]
+      contents: [{ parts: [{ text: fullPrompt }] }]
     })
   });
 
@@ -29,7 +55,8 @@ async function callGemini(prompt) {
   }
 
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini.";
+  const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini.";
+  return { text: textResponse, image: null };
 }
 
 export const getUsersForSidebar = async (req, res) => {
@@ -131,24 +158,38 @@ export const sendMessage = async (req, res) => {
         try {
           const prompt = text.replace(/@gemini/gi, "").trim();
           console.log("Processing Gemini request in background for prompt:", prompt);
-          const geminiText = await callGemini(prompt);
           
-          // Update saved message with Gemini response
-          newMessage.geminiResponse = geminiText;
+          // Fetch last 5 messages in conversation for AI context
+          const recentMessages = await Message.find({
+            $or: [
+              { senderId, receiverId },
+              { senderId: receiverId, receiverId: senderId },
+            ],
+          }).sort({ createdAt: -1 }).limit(5);
+          
+          const result = await callGemini(prompt, recentMessages.reverse());
+          
+          // Update saved message with Gemini text and image
+          newMessage.geminiResponse = result.text;
+          newMessage.geminiImage = result.image;
           await newMessage.save();
 
           // Invalidate cache again so fetch gets latest data
           await redis.del(`messages:${conversationId}`);
 
           // Emit event to update the message in real-time on frontends
-          const updatePayload = { messageId: newMessage._id, geminiResponse: geminiText };
+          const updatePayload = { 
+            messageId: newMessage._id, 
+            geminiResponse: result.text,
+            geminiImage: result.image
+          };
           if (receiverSocketId) io.to(receiverSocketId).emit("updateMessageGemini", updatePayload);
           if (senderSocketId) io.to(senderSocketId).emit("updateMessageGemini", updatePayload);
         } catch (aiError) {
           console.error("Async Gemini processing error:", aiError.message);
           newMessage.geminiResponse = "Sorry, I could not process your request right now. Please try again.";
           await newMessage.save();
-          const updatePayload = { messageId: newMessage._id, geminiResponse: newMessage.geminiResponse };
+          const updatePayload = { messageId: newMessage._id, geminiResponse: newMessage.geminiResponse, geminiImage: null };
           if (receiverSocketId) io.to(receiverSocketId).emit("updateMessageGemini", updatePayload);
           if (senderSocketId) io.to(senderSocketId).emit("updateMessageGemini", updatePayload);
         }

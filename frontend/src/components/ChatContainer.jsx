@@ -110,6 +110,16 @@ const ChatContainer = () => {
                     borderColor: "#7BAEE0",
                     maxWidth: "80%",
                   }}>
+                  {message.geminiImage && (
+                    <div className="mb-2 overflow-hidden rounded-lg border border-blue-200 shadow-sm">
+                      <img
+                        src={message.geminiImage}
+                        alt="Gemini Generated Art"
+                        className="w-full max-h-72 object-cover rounded-lg hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
                   <div className="prose prose-sm max-w-none text-base-content"
                     style={{ fontSize: "0.875rem" }}>
                     <ReactMarkdown

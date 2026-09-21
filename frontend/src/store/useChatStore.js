@@ -53,6 +53,9 @@ export const useChatStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
+    socket.off("newMessage");
+    socket.off("updateMessageGemini");
+
     socket.on("newMessage", (newMessage) => {
       const { selectedUser } = get();
       const isMessageFromSelectedUser = selectedUser && newMessage.senderId === selectedUser._id;

@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Gemini API helper - AQ. keys work as query params, no Bearer needed
 // .trim() is critical to remove Windows CRLF line endings from .env file
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`;
 
 async function callGemini(prompt, conversationHistory = []) {
   const isImageRequest = /(generate|create|draw|make|show|render)\s+.*(image|photo|picture|drawing|illustration|art)/i.test(prompt);

@@ -69,6 +69,7 @@ backend:
     mongodbUri: mongodb://root:admin@mongodb:27017/chatApp?authSource=admin
     port: "5001"
     nodeEnv: production
+    geminiApiKey: "<YOUR_GEMINI_API_KEY>"
   secretRef:
     name: backend-secrets
     keys:

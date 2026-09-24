@@ -16,7 +16,7 @@ metrics:
 frontend:
   replicas: 2
   image:
-    repository: rahul6364/full-stack-chatapp-frontend
+    repository: gamanrai/full-stack-chatapp-frontend
     tag: 22ded07
     pullPolicy: IfNotPresent
   service:
@@ -58,7 +58,7 @@ frontend:
 backend:
   replicas: 2
   image:
-    repository: rahul6364/full-stack-chatapp-backend
+    repository: gamanrai/full-stack-chatapp-backend
     tag: 22ded07
     pullPolicy: Always
   service:

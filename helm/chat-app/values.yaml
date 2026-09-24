@@ -17,7 +17,7 @@ frontend:
   replicas: 2
   image:
     repository: gamanrai/full-stack-chatapp-frontend
-    tag: 22ded07
+    tag: 0b1f665
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -59,7 +59,7 @@ backend:
   replicas: 2
   image:
     repository: gamanrai/full-stack-chatapp-backend
-    tag: 22ded07
+    tag: 0b1f665
     pullPolicy: Always
   service:
     type: ClusterIP
@@ -216,8 +216,8 @@ sealedSecret:
 notification:
   replicaCount: 1
   image:
-    repository: your-dockerhub-user/notification-service
-    tag: "latest"
+    repository: gamanrai/full-stack-chatapp-notification
+    tag: 0b1f665
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

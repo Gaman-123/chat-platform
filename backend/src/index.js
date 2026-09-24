@@ -24,7 +24,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://chat-app.com:8080", "http://chat-app.com", "http://localhost:8080", "http://localhost:5173"],
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
   })
 );

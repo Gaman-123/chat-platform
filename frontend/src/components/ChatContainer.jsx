@@ -134,19 +134,19 @@ const ChatContainer = () => {
                     style={{ fontSize: "0.875rem" }}>
                     <ReactMarkdown
                       components={{
-                        h1: ({node, ...props}) => <h1 className="text-lg font-bold mt-2 mb-1" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="text-base font-bold mt-2 mb-1" {...props} />,
-                        h3: ({node, ...props}) => <h3 className="text-sm font-bold mt-2 mb-1" {...props} />,
-                        strong: ({node, ...props}) => <strong className="font-semibold text-primary" {...props} />,
-                        ul: ({node, ...props}) => <ul className="list-disc pl-4 my-1 space-y-0.5" {...props} />,
-                        ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-1 space-y-0.5" {...props} />,
-                        li: ({node, ...props}) => <li className="text-sm" {...props} />,
-                        p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
-                        hr: ({node, ...props}) => <hr className="border-blue-200 my-2" {...props} />,
-                        code: ({node, inline, ...props}) => inline 
+                        h1: ({ ...props }) => <h1 className="text-lg font-bold mt-2 mb-1" {...props} />,
+                        h2: ({ ...props }) => <h2 className="text-base font-bold mt-2 mb-1" {...props} />,
+                        h3: ({ ...props }) => <h3 className="text-sm font-bold mt-2 mb-1" {...props} />,
+                        strong: ({ ...props }) => <strong className="font-semibold text-primary" {...props} />,
+                        ul: ({ ...props }) => <ul className="list-disc pl-4 my-1 space-y-0.5" {...props} />,
+                        ol: ({ ...props }) => <ol className="list-decimal pl-4 my-1 space-y-0.5" {...props} />,
+                        li: ({ ...props }) => <li className="text-sm" {...props} />,
+                        p: ({ ...props }) => <p className="mb-1 last:mb-0" {...props} />,
+                        hr: ({ ...props }) => <hr className="border-blue-200 my-2" {...props} />,
+                        code: ({ inline, ...props }) => inline 
                           ? <code className="bg-blue-100 px-1 rounded text-xs font-mono" {...props} />
                           : <code className="block bg-blue-50 p-2 rounded text-xs font-mono my-1 overflow-x-auto" {...props} />,
-                        pre: ({node, ...props}) => <pre className="bg-blue-50 rounded overflow-x-auto my-1" {...props} />,
+                        pre: ({ ...props }) => <pre className="bg-blue-50 rounded overflow-x-auto my-1" {...props} />,
                       }}
                     >
                       {message.geminiResponse}

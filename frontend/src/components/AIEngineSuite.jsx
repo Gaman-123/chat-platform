@@ -67,7 +67,7 @@ const AIEngineSuite = () => {
   ];
 
   return (
-    <div className="bg-base-200 border-l border-base-300 w-80 sm:w-96 flex flex-col h-full overflow-hidden shadow-xl">
+    <div id="ai-enterprise-hub" className="bg-base-200 border-l border-base-300 w-80 sm:w-96 flex flex-col h-full overflow-hidden shadow-xl transition-all">
       {/* Header */}
       <div className="p-4 border-b border-base-300 flex items-center justify-between bg-base-100">
         <div className="flex items-center gap-2">

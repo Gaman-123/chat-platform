@@ -1,4 +1,4 @@
-import { X, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft, Sparkles } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
@@ -40,13 +40,27 @@ const ChatHeader = () => {
           </div>
         </div>
 
-        {/* Close button for desktop view */}
-        <button
-          onClick={() => setSelectedUser(null)}
-          className="hidden md:flex btn btn-ghost btn-sm btn-circle"
-        >
-          <X className="size-4" />
-        </button>
+        {/* Actions & Close button */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              const el = document.getElementById("ai-enterprise-hub");
+              if (el) el.classList.toggle("hidden");
+            }}
+            className="btn btn-primary btn-xs sm:btn-sm gap-1.5 flex"
+            title="Toggle AI Enterprise Suite"
+          >
+            <Sparkles className="size-4 animate-pulse" />
+            <span className="hidden sm:inline">AI Suite</span>
+          </button>
+
+          <button
+            onClick={() => setSelectedUser(null)}
+            className="hidden md:flex btn btn-ghost btn-sm btn-circle"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

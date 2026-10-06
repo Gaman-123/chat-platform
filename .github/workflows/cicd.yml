@@ -380,3 +380,22 @@ jobs:
           git commit -m "chore(ci): update helm image tags to ${{ needs.docker_meta.outputs.short_sha }} [skip ci]"
           git push origin main
 
+  deploy_to_ec2:
+    name: Deploy to AWS EC2 Instance
+    runs-on: ubuntu-latest
+    needs: [docker_push]
+    if: ${{ needs.docker_meta.outputs.should_push == 'true' && github.event_name != 'pull_request' }}
+    steps:
+      - name: Deploy via SSH to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST || '3.110.123.183' }}
+          username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd ~/cloud-native-chat-platform || cd /home/ubuntu/cloud-native-chat-platform || cd /var/www/cloud-native-chat-platform
+            git pull origin main
+            docker-compose down
+            docker-compose up -d --build
+

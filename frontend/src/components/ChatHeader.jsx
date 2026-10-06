@@ -45,12 +45,25 @@ const ChatHeader = () => {
           <button
             onClick={() => {
               const el = document.getElementById("ai-enterprise-hub");
-              if (el) el.classList.toggle("hidden");
+              if (el) {
+                const isHidden = el.classList.toggle("hidden");
+                const btn = document.getElementById("ai-suite-toggle-btn");
+                if (btn) {
+                  if (isHidden) {
+                    btn.classList.remove("btn-primary");
+                    btn.classList.add("btn-outline");
+                  } else {
+                    btn.classList.remove("btn-outline");
+                    btn.classList.add("btn-primary");
+                  }
+                }
+              }
             }}
-            className="btn btn-primary btn-sm gap-1.5 flex items-center font-semibold shadow-sm"
+            id="ai-suite-toggle-btn"
+            className="btn btn-outline btn-sm gap-1.5 flex items-center font-semibold shadow-sm transition-all"
             title="Toggle AI Enterprise Suite"
           >
-            <Sparkles className="size-4 animate-pulse" />
+            <Sparkles className="size-4" />
             <span>AI Suite</span>
           </button>
 

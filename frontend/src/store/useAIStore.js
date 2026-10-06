@@ -36,7 +36,7 @@ export const useAIStore = create((set) => ({
         decisions: res.data.decisions || [],
         actionItems: res.data.actionItems || [],
       });
-    } catch (err) {
+    } catch {
       toast.error("Failed to generate summary");
     } finally {
       set({ isSummarizing: false });
@@ -48,7 +48,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/smart-reply", { userId });
       set({ smartReplies: res.data.suggestions || [] });
-    } catch (err) {
+    } catch {
       set({ smartReplies: ["Sounds good!", "Let's keep in touch.", "Can you elaborate?"] });
     } finally {
       set({ isSmartReplying: false });
@@ -60,7 +60,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/sentiment", { userId });
       set({ sentimentData: res.data });
-    } catch (err) {
+    } catch {
       toast.error("Failed to analyze sentiment");
     } finally {
       set({ isAnalyzingSentiment: false });
@@ -72,7 +72,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/tasks", { userId });
       set({ extractedTasks: res.data.tasks || [] });
-    } catch (err) {
+    } catch {
       toast.error("Failed to extract tasks");
     } finally {
       set({ isExtractingTasks: false });
@@ -84,7 +84,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/minutes", { userId });
       set({ meetingMinutes: res.data });
-    } catch (err) {
+    } catch {
       toast.error("Failed to generate minutes");
     } finally {
       set({ isGeneratingMinutes: false });
@@ -96,7 +96,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/intent", { userId });
       set({ intentData: res.data });
-    } catch (err) {
+    } catch {
       toast.error("Failed to detect intent");
     } finally {
       set({ isDetectingIntent: false });
@@ -108,7 +108,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/sales-lead", { userId });
       set({ salesLeadData: res.data });
-    } catch (err) {
+    } catch {
       toast.error("Failed to analyze sales opportunity");
     } finally {
       set({ isDetectingSales: false });
@@ -120,7 +120,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/risk-score", { userId });
       set({ riskData: res.data });
-    } catch (err) {
+    } catch {
       toast.error("Failed to analyze risk score");
     } finally {
       set({ isAnalyzingRisk: false });
@@ -132,7 +132,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.post("/ai/knowledge-bot", { question });
       set({ botAnswer: res.data.answer });
-    } catch (err) {
+    } catch {
       toast.error("Knowledge Bot failed to respond");
     } finally {
       set({ isAskingBot: false });
@@ -144,7 +144,7 @@ export const useAIStore = create((set) => ({
     try {
       const res = await axiosInstance.get("/ai/dashboard");
       set({ dashboardData: res.data });
-    } catch (err) {
+    } catch {
       toast.error("Failed to load Executive Dashboard");
     } finally {
       set({ isLoadingDashboard: false });

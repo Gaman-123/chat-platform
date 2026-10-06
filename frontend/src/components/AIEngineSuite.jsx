@@ -164,7 +164,7 @@ const AIEngineSuite = () => {
                     }}
                     className="p-3 bg-base-100 hover:bg-primary/10 border border-base-300 rounded-lg cursor-pointer text-xs transition-all"
                   >
-                    "{reply}"
+                    &quot;{reply}&quot;
                   </div>
                 ))}
               </div>

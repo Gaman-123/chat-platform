@@ -17,7 +17,7 @@ frontend:
   replicas: 2
   image:
     repository: gamanrai/full-stack-chatapp-frontend
-    tag: 0ef1cf2
+    tag: 59b0655
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -59,7 +59,7 @@ backend:
   replicas: 2
   image:
     repository: gamanrai/full-stack-chatapp-backend
-    tag: 0ef1cf2
+    tag: 59b0655
     pullPolicy: Always
   service:
     type: ClusterIP
@@ -218,7 +218,7 @@ notification:
   replicaCount: 1
   image:
     repository: gamanrai/full-stack-chatapp-notification
-    tag: 0ef1cf2
+    tag: 59b0655
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

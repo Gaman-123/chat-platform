@@ -11,6 +11,7 @@ import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import healthRoutes from "./routes/health.route.js";
 import metricsRoutes from "./routes/metrics.route.js";
+import aiRoutes from "./routes/ai.route.js";
 import { metricsMiddleware } from "./middleware/metrics.middleware.js";
 import { app, server } from "./lib/socket.js";
 
@@ -39,6 +40,7 @@ app.use((req, res, next) => {
 app.use("/metrics", metricsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/ai", aiRoutes);
 app.use("/health", healthRoutes);
 
 // Global Error Handler

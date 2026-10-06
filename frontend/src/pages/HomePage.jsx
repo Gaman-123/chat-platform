@@ -3,6 +3,7 @@ import { useChatStore } from "../store/useChatStore";
 import Sidebar from "../components/Sidebar";
 import NoChatSelected from "../components/NoChatSelected";
 import ChatContainer from "../components/ChatContainer";
+import AIEngineSuite from "../components/AIEngineSuite";
 
 const HomePage = () => {
   const { selectedUser } = useChatStore();
@@ -18,8 +19,17 @@ const HomePage = () => {
             </div>
 
             {/* ChatContainer / NoChatSelected: Full width on mobile when user selected */}
-            <div className={`flex-1 flex flex-col ${!selectedUser ? "hidden md:flex" : "w-full"}`}>
-              {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
+            <div className={`flex-1 flex flex-row ${!selectedUser ? "hidden md:flex flex-col" : "w-full"}`}>
+              {!selectedUser ? (
+                <NoChatSelected />
+              ) : (
+                <>
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <ChatContainer />
+                  </div>
+                  <AIEngineSuite />
+                </>
+              )}
             </div>
           </div>
         </div>

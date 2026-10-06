@@ -41,17 +41,17 @@ const ChatHeader = () => {
         </div>
 
         {/* Actions & Close button */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => {
               const el = document.getElementById("ai-enterprise-hub");
               if (el) el.classList.toggle("hidden");
             }}
-            className="btn btn-primary btn-xs sm:btn-sm gap-1.5 flex"
+            className="btn btn-primary btn-sm gap-1.5 flex items-center font-semibold shadow-sm"
             title="Toggle AI Enterprise Suite"
           >
             <Sparkles className="size-4 animate-pulse" />
-            <span className="hidden sm:inline">AI Suite</span>
+            <span>AI Suite</span>
           </button>
 
           <button
